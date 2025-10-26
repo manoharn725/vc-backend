@@ -30,13 +30,13 @@ const signin = async (req, res, next) => {
         // 1. Find user
         const user = await findUserByEmail(userEmail);
         if (!user) {
-            return res.status(400).json({ err: "user not found!" })
+            return res.status(400).json({ error: "user not found!" })
         }
 
         // 2. Compare password
         const isMatch = await bcrypt.compare(userPassword, user.password_hash);
         if (!isMatch) {
-            return res.status(400).json({ err: "invalid credentials" })
+            return res.status(400).json({ error: "invalid credentials" })
         }
 
         // 3. Update last login time
