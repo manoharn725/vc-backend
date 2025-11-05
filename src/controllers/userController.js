@@ -4,7 +4,7 @@ const { createUser, findUserByEmail, updateUserPassword, updateLastLogin, update
 
 const signup = async (req, res, next) => {
     try {
-        const { firstName, lastName, phoneNumber, userEmail, createPassword, isAdmin=false } = req.body;
+        const { firstName, lastName, phoneNumber, userEmail, createPassword } = req.body;
 
         // 1. Basic validation
         if(!firstName?.trim() || !lastName?.trim() || !phoneNumber?.trim() || !userEmail?.trim() || !createPassword?.trim()){
@@ -21,12 +21,12 @@ const signup = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(createPassword, 10);
 
         // 4. Create User in DB
-        const newUser = await createUser(firstName, lastName, phoneNumber, userEmail, hashedPassword, createPassword, isAdmin);
+        const newUser = await createUser(firstName, lastName, phoneNumber, userEmail, hashedPassword, createPassword);
 
         // 5. Generate token
         const token = generateToken(newUser);
 
-        res.status(201).json({ success: true,  message: 'signup Successful', user: {id: newUser.id, firstName: newUser.first_name, lastName: newUser.last_name, phoneNumber: newUser.phone_number, userEmail:newUser.user_email, isAdmin: newUser.is_admin, createdAt: newUser.created_at },
+        res.status(201).json({ success: true,  message: 'signup Successful', user: {id: newUser.id, firstName: newUser.first_name, lastName: newUser.last_name, phoneNumber: newUser.phone_number, userEmail:newUser.user_email, createdAt: newUser.created_at },
         token })
     } catch (err) {
         console.error("Signup Error", err)

@@ -10,7 +10,7 @@ const getAllUsers = async () => {
 const createUser = async (firstName, lastName, phoneNumber, userEmail, hashedPassword, createPassword) => {
     const createdAt = new Date()
   const result = await sql.query(
-    `INSERT INTO users (first_name, last_name, phone_number, user_email, password_hash, password, created_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, first_name, last_name, phone_number, user_email, is_admin, created_at`,
+    `INSERT INTO users (first_name, last_name, phone_number, user_email, password_hash, password, created_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, first_name, last_name, phone_number, user_email, created_at`,
     [firstName, lastName, phoneNumber, userEmail, hashedPassword, createPassword, createdAt]
   );
   return result.rows[0];

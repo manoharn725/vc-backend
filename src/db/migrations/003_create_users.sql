@@ -18,7 +18,7 @@ CREATE TABLE users (
 
     -- timestamps
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
     last_login TIMESTAMP,
     last_logout TIMESTAMP
 );
