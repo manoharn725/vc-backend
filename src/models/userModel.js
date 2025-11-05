@@ -1,11 +1,17 @@
 const sql = require("../db/pg");
 
+// Get all user
+const getAllUsers = async () => {
+  const result = await sql.query(`SELECT * FROM users ORDER BY id DESC`);
+  return result.rows;
+};
+
 // Create a new user(signup)
-const createUser = async (userName, userEmail, hashedPassword, userPassword, isAdmin=false) => {
+const createUser = async (firstName, lastName, phoneNumber, userEmail, hashedPassword, createPassword) => {
     const createdAt = new Date()
   const result = await sql.query(
-    `INSERT INTO users (user_name, user_email, password_hash, password, is_admin, created_at) VALUES($1, $2, $3, $4, $5, $6) RETURNING id, user_name, user_email, is_admin, created_at`,
-    [userName, userEmail, hashedPassword, userPassword, isAdmin, createdAt]
+    `INSERT INTO users (first_name, last_name, phone_number, user_email, password_hash, password, created_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, first_name, last_name, phone_number, user_email, is_admin, created_at`,
+    [firstName, lastName, phoneNumber, userEmail, hashedPassword, createPassword, createdAt]
   );
   return result.rows[0];
 };
@@ -25,7 +31,7 @@ const updateUserPassword = async (userEmail, hashedPassword, newPassword) => {
     const result = await sql.query(
         `UPDATE users SET password_hash = $1, updated_at = $2, password = $3
         WHERE user_email = $4
-        RETURNING id, user_name, user_email, is_admin, created_at, updated_at`,
+        RETURNING id, first_name, last_name, phone_number, user_email, role_id, status_id, created_at, apperoved_by, updated_at, last_login, last_logout`,
         [hashedPassword, updatedAt, newPassword, userEmail]
     );
     return result.rows[0];
@@ -36,7 +42,7 @@ const updateLastLogin =  async (userEmail) => {
   const lastLogin = new Date();
   const result = await sql.query(
     `UPDATE users SET last_login = $1 WHERE user_email = $2
-    RETURNING id, user_name, user_email, last_login, last_logout`, [lastLogin, userEmail]
+    RETURNING id, first_name, last_name, user_email, last_login, last_logout`, [lastLogin, userEmail]
   )
 }
 
@@ -45,14 +51,8 @@ const updateLastLogout = async(userEmail) => {
   const lastLogout = new Date();
   const result = sql.query(
     `UPDATE users SET last_logout = $1 WHERE user_email = $2
-    RETURNING id, user_name, user_email, last_login, last_logout`, [lastLogout, userEmail]
+    RETURNING id, first_name, last_name, user_email, last_login, last_logout`, [lastLogout, userEmail]
   )
 }
 
-// Get all user
-const getAllUsers = async () => {
-  const result = await sql.query(`SELECT * FROM users ORDER BY id DESC`);
-  return result.rows;
-};
-
-module.exports = { createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout, getAllUsers };
+module.exports = { getAllUsers, createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout };

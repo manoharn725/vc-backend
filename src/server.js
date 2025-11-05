@@ -11,8 +11,14 @@ app.use(express.json());
 
 // Routes
 const userRouter = require('./routes/userRoutes');
+const roleRouter = require('./routes/roleRoutes');
+const accountStatusRouter = require('./routes/accountStatusRoutes');
+
+// Paths
 app.get("/", (req, res) => res.send("Hello from express"));
 app.use('/api/users', userRouter);
+app.use('/api/roles', roleRouter);
+app.use('/api/account-statuses', accountStatusRouter);
 
 // Error Middleware
 app.use(errHandler)

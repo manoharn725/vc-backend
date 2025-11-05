@@ -1,16 +1,17 @@
 const jwt = require('jsonwebtoken');
+const SECRET = process.env.JWT_SECRET;
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; //Barer TOKEN
 
     if(!token) {
-        return res.status(401).json({ error: "Access token required!"});
+        return res.status(401).json({ success: false, message: "Access token required!"});
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, SECRET, (err, user) => {
         if(err) {
-            return res.status(403).json({ error: "Invalid or expired token"});
+            return res.status(403).json({ success: false, message: "Invalid or expired token"});
         }
         req.user = user;
         next();
