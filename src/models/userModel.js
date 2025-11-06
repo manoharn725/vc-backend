@@ -37,7 +37,7 @@ const updateUserPassword = async (userEmail, hashedPassword, newPassword) => {
     return result.rows[0];
 }
 
-//Update last login time
+// Update last login time
 const updateLastLogin =  async (userEmail) => {
   const lastLogin = new Date();
   const result = await sql.query(
@@ -46,7 +46,7 @@ const updateLastLogin =  async (userEmail) => {
   )
 }
 
-//Update last logout time
+// Update last logout time
 const updateLastLogout = async(userEmail) => {
   const lastLogout = new Date();
   const result = sql.query(
@@ -54,5 +54,8 @@ const updateLastLogout = async(userEmail) => {
     RETURNING id, first_name, last_name, user_email, last_login, last_logout`, [lastLogout, userEmail]
   )
 }
+
+// Update user role
+// const updateUserRole = async (userId, newRoleId, approvedBy)
 
 module.exports = { getAllUsers, createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout };
