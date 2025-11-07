@@ -18,8 +18,8 @@ CREATE TABLE users (
     -- Approval tracking
     role_approved_by INT REFERENCES users(id),
     role_approved_at TIMESTAMP,
-    status_approved_by INT REFERENCES users(id),
-    status_approved_at TIMESTAMP,
+    account_status_approved_by INT REFERENCES users(id),
+    account_status_approved_at TIMESTAMP,
 
     -- timestamps
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -41,8 +41,8 @@ INSERT INTO users (
     account_status_id, 
     role_approved_by,
     role_approved_at,
-    status_approved_by,
-    status_approved_at,
+    account_status_approved_by,
+    account_status_approved_at,
     created_at, 
     updated_at, 
     last_login, 

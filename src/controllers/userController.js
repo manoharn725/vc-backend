@@ -1,14 +1,23 @@
 const bcrypt = require('bcryptjs');
 const generateToken = require("../utils/generateToken");
-const { createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout, getAllUsers } = require('../models/userModel');
+const { getAllUsers, createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus } = require('../models/userModel');
+
+const fetchUsers = async (req, res, next) => {
+    try {
+        const users = await getAllUsers();
+        res.status(200).json({ message: 'get All Users Data', users: users })
+    } catch (err) {
+        next(err);//pass error to middleware
+    }
+}
 
 const signup = async (req, res, next) => {
     try {
         const { firstName, lastName, phoneNumber, userEmail, createPassword } = req.body;
 
         // 1. Basic validation
-        if(!firstName?.trim() || !lastName?.trim() || !phoneNumber?.trim() || !userEmail?.trim() || !createPassword?.trim()){
-            return res.status(400).json({success: false, message: "All fields are required"});
+        if (!firstName?.trim() || !lastName?.trim() || !phoneNumber?.trim() || !userEmail?.trim() || !createPassword?.trim()) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
         // 2. check if user exists
@@ -26,8 +35,10 @@ const signup = async (req, res, next) => {
         // 5. Generate token
         const token = generateToken(newUser);
 
-        res.status(201).json({ success: true,  message: 'signup Successful', user: {id: newUser.id, firstName: newUser.first_name, lastName: newUser.last_name, phoneNumber: newUser.phone_number, userEmail:newUser.user_email, createdAt: newUser.created_at },
-        token })
+        res.status(201).json({
+            success: true, message: 'signup Successful', user: { id: newUser.id, firstName: newUser.first_name, lastName: newUser.last_name, phoneNumber: newUser.phone_number, userEmail: newUser.user_email, createdAt: newUser.created_at },
+            token
+        })
     } catch (err) {
         console.error("Signup Error", err)
         next(err);//pass error to middleware
@@ -39,8 +50,8 @@ const signin = async (req, res, next) => {
         const { userEmail, userPassword } = req.body;
 
         // 1. Input validation
-        if(!userEmail?.trim() || !userPassword?.trim()){
-            return res.status(400).json({success: false, message: "Email and password are required!"});
+        if (!userEmail?.trim() || !userPassword?.trim()) {
+            return res.status(400).json({ success: false, message: "Email and password are required!" });
         }
 
         // 2. Find user
@@ -64,7 +75,7 @@ const signin = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "login successful",
-            user: { id: user.id, firstName: user.first_name, lastName: user.last_name, phoneNumber: user.phone_number, userEmail: user.user_email, role: user.role_id, status:user.status_id, approvedBy: user.approved_by, updatedAt: user.updated_at, lastLogin: user.last_login, lastLogout: user.last_logout },
+            user: { id: user.id, firstName: user.first_name, lastName: user.last_name, phoneNumber: user.phone_number, userEmail: user.user_email, role: user.role_id, status: user.status_id, approvedBy: user.approved_by, updatedAt: user.updated_at, lastLogin: user.last_login, lastLogout: user.last_logout },
             token,
         })
     } catch (err) {
@@ -74,7 +85,7 @@ const signin = async (req, res, next) => {
 }
 
 const signout = async (req, res, next) => {
-    console.log('signout request:',req);
+    console.log('signout request:', req);
     try {
         const userEmail = req.user.email; //From authentication middleware
 
@@ -117,13 +128,40 @@ const resetPassword = async (req, res, next) => {
     }
 }
 
-const fetchUsers = async (req, res, next) => {
+// Update user role
+const changeUserRole = async (req, res, next) => {
     try {
-        const users = await getAllUsers();
-        res.status(200).json({ message: 'get All Users Data', users: users })
+        const { userId, newRoleId } = req.body;
+        const adminId = req?.user?.id; //assuming you have JWT middleware(roleapprovedBy)
+
+        if (!userId || !newRoleId || !adminId) {
+            return res.status(400).json({ success: false, message: "Moissing required fields!" });
+        }
+
+        const updateUser = await updateUserRole(userId, newRoleId, adminId);
+        res.status(200).json({ success: true, message: "user role updated successfully!", user: updateUser });
     } catch (err) {
-        next(err);//pass error to middleware
+        console.error("change user role error", err);
+        next(err);
     }
 }
 
-module.exports = { signup, signin, signout, resetPassword, fetchUsers };
+// Update usser account status
+const changeUserAccountStatus = async (req, res, next) => {
+    try {
+        const { userId, newAccountStatusId } = req.body;
+        const adminId = req?.user?.id; //assuming you have JWT middleware(accountStatusApprovedBy)
+
+        if (!userId || !newAccountStatusId || !adminId) {
+            return res.status(200).json({ success: false, message: "Missing required fields!" });
+        }
+
+        const updateUser = await updateUserAccountStatus(userId, newAccountStatusId, adminId);
+        res.status(200).json({ success: true, message: "user status updated successfully", user: updateUser });
+    } catch (err) {
+        console.error("change user account status error", err);
+        next(err);
+    }
+}
+
+module.exports = { fetchUsers, signup, signin, signout, resetPassword, changeUserRole, changeUserAccountStatus };

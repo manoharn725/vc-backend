@@ -43,7 +43,8 @@ const updateLastLogin =  async (userEmail) => {
   const result = await sql.query(
     `UPDATE users SET last_login = $1 WHERE user_email = $2
     RETURNING id, first_name, last_name, user_email, last_login, last_logout`, [lastLogin, userEmail]
-  )
+  );
+  return result.rows[0]
 }
 
 // Update last logout time
@@ -52,10 +53,22 @@ const updateLastLogout = async(userEmail) => {
   const result = sql.query(
     `UPDATE users SET last_logout = $1 WHERE user_email = $2
     RETURNING id, first_name, last_name, user_email, last_login, last_logout`, [lastLogout, userEmail]
-  )
+  );
+  return result.rows[0];
 }
 
 // Update user role
-// const updateUserRole = async (userId, newRoleId, approvedBy)
+const updateUserRole = async (userId, newRoleId, roleApprovedBy) => {
+  const roleApprovedAt = new Date();
+  const result = await sql.query(` UPDATE users SET role_id = $1 , role_approved_by = $2, role_approved_at = $3 WHERE id = $4 RETURNING *`, [newRoleId, roleApprovedBy, roleApprovedAt, userId]);
+  return result.rows[0];
+}
 
-module.exports = { getAllUsers, createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout };
+// Update user account status
+const updateUserAccountStatus = async (userId, newAccountStatusId, accountStatusApprovedBy) => {
+  const accountStatusApprovedAt = new Date();
+  const result = await sql.query(` UPDATE users SET account_status_id = $1, account_status_approved_by = $2, account_status_approved_at = $3 WHERE id = $4 RETURNING *`, [newAccountStatusId, accountStatusApprovedBy, accountStatusApprovedAt, userId]);
+  return result.rows[0];
+}
+
+module.exports = { getAllUsers, createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus };
