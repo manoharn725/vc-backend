@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const generateToken = require("../utils/generateToken");
-const { getAllUsers, createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus } = require('../models/userModel');
+const { getAllUsers, createUser, findUserByEmail, findUserById, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus } = require('../models/userModel');
+const { createPin, getValidPinByCode, markPinUsed, deleteExpriedPin } = require("../models/pinGeneratorModel");
+const sendMail = require("../utils/sendMail");
 
 const fetchUsers = async (req, res, next) => {
     try {
@@ -102,26 +105,62 @@ const signout = async (req, res, next) => {
     }
 }
 
-const resetPassword = async (req, res, next) => {
+// Forgot Password -> Generate PIN + send mail
+const forgotPassword = async (req, res, next) => {
     try {
-        const { userEmail, oldPassword, newPassword } = req.body;
 
-        // 1. Check if user exists
+        const { userEmail } = req.body;
         const user = await findUserByEmail(userEmail);
+
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            res.status(404).json({ success: false, message: "User not found!" })
         }
 
-        // 2. Verify old password
-        const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
-        if (!isMatch) {
-            return res.status(400).json({ error: "Old password is incorrect" });
+        // Generate random 6-digit PIN
+        const pinCode = crypto.randomInt(100000, 999999).toString();
+
+        // Expire in 10 minutes
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        const generatedPin = await createPin(user.id, pinCode, expiresAt);
+
+        const text = `Your 6-digit password reset code is: ${generatedPin.pin_code}\n\n This Code will expires in 10 minutes.`;
+        await sendMail(userEmail, "Password Reset Code", text);
+        
+        res.status(200).json({ success: true, message: "reset code pin sent to your email!" });
+    } catch (err) {
+        console.error("forgot password error", err);
+        next(err);
+    }
+
+}
+
+// Verify pin + Reset password
+const resetPassword = async (req, res, next) => {
+    try {
+        const { pinCode, newPassword } = req.body;
+
+        // 1. Find a valid PIN to get user
+        const validPin = await getValidPinByCode(pinCode);
+
+        if(!validPin){
+            return res.status(404).json({success: false, message:"Invalid or expired PIN!"});
+        }
+
+        // 2. Find the user linked with the PIN
+        const user = await findUserById(validPin.user_id);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
 
         // 3. Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         const updatedUser = await updateUserPassword(userEmail, hashedPassword, newPassword);
+
+        // 4. Mark PIN as used(so it can't be reused);
+        await markPinUsed(validPin.id);
+
         res.status(200).json({ message: "Password updated successful", user: updatedUser })
     } catch (err) {
         next(err)
@@ -164,4 +203,4 @@ const changeUserAccountStatus = async (req, res, next) => {
     }
 }
 
-module.exports = { fetchUsers, signup, signin, signout, resetPassword, changeUserRole, changeUserAccountStatus };
+module.exports = { fetchUsers, signup, signin, signout, forgotPassword, resetPassword, changeUserRole, changeUserAccountStatus };

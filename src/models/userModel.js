@@ -25,6 +25,12 @@ const findUserByEmail = async (userEmail) => {
   return result.rows[0];
 };
 
+// Find a user by id
+const findUserById = async (id) => {
+  const result = await sql.query(` SELECT * FROM users WHERE id = $1`, [id]);
+  return result.rows[0];
+}
+
 // Update user Password
 const updateUserPassword = async (userEmail, hashedPassword, newPassword) => {
     const updatedAt = new Date()
@@ -71,4 +77,4 @@ const updateUserAccountStatus = async (userId, newAccountStatusId, accountStatus
   return result.rows[0];
 }
 
-module.exports = { getAllUsers, createUser, findUserByEmail, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus };
+module.exports = { getAllUsers, createUser, findUserByEmail, findUserById, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus };
