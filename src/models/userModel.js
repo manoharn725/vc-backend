@@ -18,10 +18,7 @@ const createUser = async (firstName, lastName, phoneNumber, userEmail, hashedPas
 
 // Find user by email (for signup check & login)
 const findUserByEmail = async (userEmail) => {
-  const result = await sql.query(
-    `SELECT * FROM users WHERE user_email = $1`,
-    [userEmail]
-  );
+  const result = await sql.query(`SELECT * FROM users WHERE user_email = $1`,[userEmail]);
   return result.rows[0];
 };
 
@@ -56,9 +53,9 @@ const updateLastLogin =  async (userEmail) => {
 // Update last logout time
 const updateLastLogout = async(userEmail) => {
   const lastLogout = new Date();
-  const result = sql.query(
+  const result = await sql.query(
     `UPDATE users SET last_logout = $1 WHERE user_email = $2
-    RETURNING id, first_name, last_name, user_email, last_login, last_logout`, [lastLogout, userEmail]
+    RETURNING *`, [lastLogout, userEmail]
   );
   return result.rows[0];
 }
