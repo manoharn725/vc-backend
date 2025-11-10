@@ -2,7 +2,7 @@ const sql = require("../db/pg");
 
 // Create a new PIN entry
 const createPin = async (userId, pinCode, expiresAt) => {
-    const result = await sql.query(` INSERT INTO pin_generaotr(user-id, pin_code, expires_at) VALUES($1, $2, $3) RETURNING *`, [userId, pinCode, expiresAt]);
+    const result = await sql.query(` INSERT INTO pin_generator(user_id, pin_code, expires_at) VALUES($1, $2, $3) RETURNING *`, [userId, pinCode, expiresAt]);
     return result.rows[0]
 }
 
