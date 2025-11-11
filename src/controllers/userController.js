@@ -90,7 +90,7 @@ const signin = async (req, res, next) => {
 const signout = async (req, res, next) => {
     console.log('signout request:', req);
     try {
-        const userEmail = req.user.email; //From authentication middleware
+        const userEmail = req.user.email || req.user.user_email; //From authentication middleware
 
         await updateLastLogout(userEmail);
 
@@ -100,7 +100,7 @@ const signout = async (req, res, next) => {
             logoutTime: new Date()
         })
     } catch (err) {
-        console.error("Signout Error", err);
+        console.error("Signout Error:", err);
         next(err);//pass error to moddleware
     }
 }
@@ -110,26 +110,31 @@ const forgotPassword = async (req, res, next) => {
     try {
 
         const { userEmail } = req.body;
+        console.log("userEmail:", userEmail)
         const user = await findUserByEmail(userEmail);
+        console.log("user:", user)
 
         if (!user) {
-            res.status(404).json({ success: false, message: "User not found!" })
+            return res.status(404).json({ success: false, message: "User not found!" })
         }
 
         // Generate random 6-digit PIN
         const pinCode = crypto.randomInt(100000, 999999).toString();
+        console.log("pincode:", pinCode)
 
         // Expire in 10 minutes
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        console.log("expiresAt:", expiresAt);
+        console.log("userDetailes:", user);
 
         const generatedPin = await createPin(user.id, pinCode, expiresAt);
 
         const text = `Your 6-digit password reset code is: ${generatedPin.pin_code}\n\n This Code will expires in 10 minutes.`;
         await sendMail(userEmail, "Password Reset Code", text);
-        
+
         res.status(200).json({ success: true, message: "reset code pin sent to your email!" });
     } catch (err) {
-        console.error("forgot password error", err);
+        console.error("forgot password error:", err);
         next(err);
     }
 
@@ -138,10 +143,12 @@ const forgotPassword = async (req, res, next) => {
 // Verify pin + Reset password
 const resetPassword = async (req, res, next) => {
     try {
-        const { pinCode, newPassword } = req.body;
+        const { verificationCode, newPassword } = req.body;
+        console.log("pincode:", verificationCode, "newPassword", newPassword);
 
         // 1. Find a valid PIN to get user
-        const validPin = await getValidPinByCode(pinCode);
+        const validPin = await getValidPinByCode(verificationCode);
+        console.log("line151 validPin:", validPin);
 
         if(!validPin){
             return res.status(404).json({success: false, message:"Invalid or expired PIN!"});
@@ -156,11 +163,17 @@ const resetPassword = async (req, res, next) => {
         // 3. Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        const updatedUser = await updateUserPassword(userEmail, hashedPassword, newPassword);
+        const updatedUser = await updateUserPassword(user.user_email, hashedPassword, newPassword);
 
         // 4. Mark PIN as used(so it can't be reused);
-        await markPinUsed(validPin.id);
+        const usedPin = await markPinUsed(validPin.id);
 
+        // 5. Delete If PIN is used
+        if(usedPin){
+            console.log("deleting:", usedPin);
+          await deleteExpriedPin();
+        }
+        console.log("response:")
         res.status(200).json({ message: "Password updated successful", user: updatedUser })
     } catch (err) {
         next(err)

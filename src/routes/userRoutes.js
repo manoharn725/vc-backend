@@ -7,8 +7,8 @@ router.get('/', fetchUsers);
 router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/signout', authenticateToken, signout);
-router.put('/forgot-password', forgotPassword);
-router.put('/reset-password', resetPassword);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 // Role & Status update routes (protected)
 router.put('/change-role', authenticateToken, changeUserRole);

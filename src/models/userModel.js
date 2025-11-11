@@ -34,7 +34,7 @@ const updateUserPassword = async (userEmail, hashedPassword, newPassword) => {
     const result = await sql.query(
         `UPDATE users SET password_hash = $1, updated_at = $2, password = $3
         WHERE user_email = $4
-        RETURNING id, first_name, last_name, phone_number, user_email, role_id, status_id, created_at, apperoved_by, updated_at, last_login, last_logout`,
+        RETURNING *`,
         [hashedPassword, updatedAt, newPassword, userEmail]
     );
     return result.rows[0];

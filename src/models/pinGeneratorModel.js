@@ -9,7 +9,10 @@ const createPin = async (userId, pinCode, expiresAt) => {
 // Get a active PIN for user (not expired, not used)
 const getValidPinByCode = async (pinCode) => {
     const now = new Date();
-    const result = await sql.query(` SELECT * FROM pin_generator WHERE pin_code = $1 AND used = FALSE AND expires > $2 LIMIT 1`, [pinCode, now]);
+    console.log("12 Checking PIN:", pinCode);
+    console.log("13 Current time:", now);
+    const result = await sql.query(`SELECT * FROM pin_generator WHERE pin_code = $1 AND used = FALSE AND expires_at > $2 LIMIT 1`, [pinCode, now]);
+     console.log("15 Query result:", result.rows);
     return result.rows[0];
 }
 
@@ -22,7 +25,7 @@ const markPinUsed = async (pinId) => {
 // Delete all the expired pins
 const deleteExpriedPin = async () => {
     const now = new Date();
-    const result = await sql.query(` DELETE FROM pin_generator WHERE experis_at > $1 AND used = TRUE`, [now]);
+    const result = await sql.query(` DELETE FROM pin_generator WHERE expires_at <= $1 AND used = TRUE`, [now]);
     return result.rows[0];
 }
 

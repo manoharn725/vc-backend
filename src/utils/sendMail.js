@@ -1,26 +1,41 @@
-const nodeMailer = require("modemailer");
+const nodemailer = require('nodemailer');
+require("dotenv").config();
 
-const transport = nodeMailer.createTransport({
+const USER_NAME = process.env.BREVO_USER;
+const USER_PASS = process.env.BREVO_PASS;
+
+const transport = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
     port:587,
+    secure: false,
     auth: {
-        user: process.env.BREVO_USER, // your brevo email/login
-        pass: process.env.BREVO_PASS, //SMTP key
+        user: USER_NAME, // your brevo email/login
+        pass: USER_PASS, //SMTP key
     },
 });
+
+// // ✅ Verify SMTP connection before sending
+// transport.verify((error, success) => {
+//   if (error) {
+//     console.error("❌ SMTP Connection Error:", error);
+//   } else {
+//     console.log("✅ SMTP Server is ready to send emails!");
+//   }
+// });
 
 const sendMail = async (to, subject, text) => {
     try {
         const mailToUser = await transport.sendMail({
-            from: `"Support Team" <${process.env.BREVO_USER}>`,
+            from: `"Support Team" <noreply@brevo.com>`,
             to,
             subject,
             text,
         });
         console.log("Email sent to:", to);
+        return mailToUser;
     } catch(err) {
         console.error("Email send failed:", err);
-        next(err);
+         throw err;
     }
 }
 
