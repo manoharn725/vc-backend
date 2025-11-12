@@ -5,9 +5,9 @@ const USER_NAME = process.env.BREVO_USER;
 const USER_PASS = process.env.BREVO_PASS;
 
 const transport = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port:587,
-    secure: false,
+    host: "smtp.gmail.com",
+    port:465, //587,//465
+    secure: true,
     auth: {
         user: USER_NAME, // your brevo email/login
         pass: USER_PASS, //SMTP key
@@ -26,7 +26,7 @@ const transport = nodemailer.createTransport({
 const sendMail = async (to, subject, text) => {
     try {
         const mailToUser = await transport.sendMail({
-            from: `"Support Team" <noreply@brevo.com>`,
+            from: `"Support Team" <manoharn725@gmail.com>`,
             to,
             subject,
             text,
