@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const generateToken = require("../utils/generateToken");
 const { getAllUsers, createUser, findUserByEmail, findUserById, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus } = require('../models/userModel');
-const { createPin, getValidPinByCode, markPinUsed, deleteExpriedPin } = require("../models/pinGeneratorModel");
+const { createPin, getValidPinByCode, markPinUsed, deleteExpiredPin } = require("../models/pinGeneratorModel");
 const sendMail = require("../utils/sendMail");
 
 const fetchUsers = async (req, res, next) => {
@@ -164,6 +164,7 @@ const resetPassword = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         const updatedUser = await updateUserPassword(user.user_email, hashedPassword, newPassword);
+        console.log("ValidPIN.Id:", validPin.id)
 
         // 4. Mark PIN as used(so it can't be reused);
         const usedPin = await markPinUsed(validPin.id);
@@ -171,7 +172,8 @@ const resetPassword = async (req, res, next) => {
         // 5. Delete If PIN is used
         if(usedPin){
             console.log("deleting:", usedPin);
-          await deleteExpriedPin();
+            console.log("usedPIN.id:", usedPin.id);
+           await deleteExpiredPin(usedPin.id);
         }
         console.log("response:")
         res.status(200).json({ message: "Password updated successful", user: updatedUser })

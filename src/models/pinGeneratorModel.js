@@ -23,10 +23,9 @@ const markPinUsed = async (pinId) => {
 }
 
 // Delete all the expired pins
-const deleteExpriedPin = async () => {
-    const now = new Date();
-    const result = await sql.query(` DELETE FROM pin_generator WHERE expires_at <= $1 AND used = TRUE`, [now]);
+const deleteExpiredPin = async (pinGeneratorId) => {
+    const result = await sql.query(` DELETE FROM pin_generator WHERE id = $1 AND used = TRUE`, [pinGeneratorId]);
     return result.rows[0];
 }
 
-module.exports = { createPin, getValidPinByCode, markPinUsed, deleteExpriedPin }
+module.exports = { createPin, getValidPinByCode, markPinUsed, deleteExpiredPin }
