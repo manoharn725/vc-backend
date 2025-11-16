@@ -6,7 +6,7 @@ const upsertPin = async (userId, pinCode, expiresAt) => {
         INSERT INTO pin_generator(user_id, pin_code, expires_at) 
         VALUES($1, $2, $3)
         ON CONFLICT(user_id)
-        DO UPDATE SET pin_code = EXCLUDED.pin_code, experis_at = EXCLUDED.experis_at, used = FALSE, created_at = CURRENT_TIMESTAMP 
+        DO UPDATE SET pin_code = EXCLUDED.pin_code, expires_at = EXCLUDED.expires_at, used = FALSE, created_at = CURRENT_TIMESTAMP 
         RETURNING *;
         `, [userId, pinCode, expiresAt]);
     return result.rows[0]
@@ -28,10 +28,15 @@ const markPinUsed = async (pinId) => {
     return result.rows[0]
 }
 
+// Delete PIN by userId (used when email send fails)
+const deletePinByUserId = async (userId) => {
+    const result = sql.query(`DELETE FROM pin_generator WHERE user_id = $1`, [userId]);
+}
+
 // Delete all the expired pins
 const deleteExpiredPin = async (pinGeneratorId) => {
     const result = await sql.query(` DELETE FROM pin_generator WHERE id = $1 AND used = TRUE`, [pinGeneratorId]);
     return result.rows[0];
 }
 
-module.exports = { upsertPin, getValidPinByCode, markPinUsed, deleteExpiredPin }
+module.exports = { upsertPin, getValidPinByCode, markPinUsed, deletePinByUserId, deleteExpiredPin }

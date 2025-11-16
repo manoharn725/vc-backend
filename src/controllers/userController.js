@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const generateToken = require("../utils/generateToken");
 const { getAllUsers, createUser, findUserByEmail, findUserById, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus } = require('../models/userModel');
-const { upsertPin, getValidPinByCode, markPinUsed, deleteExpiredPin } = require("../models/pinGeneratorModel");
+const { upsertPin, getValidPinByCode, markPinUsed, deletePinByUserId, deleteExpiredPin } = require("../models/pinGeneratorModel");
 const sendMail = require("../utils/sendMail");
 
 const fetchUsers = async (req, res, next) => {
@@ -127,12 +127,19 @@ const forgotPassword = async (req, res, next) => {
         console.log("expiresAt:", expiresAt);
         console.log("userDetailes:", user);
 
+         // Insert or update existing PIN for this user
         const generatedPin = await upsertPin(user.id, pinCode, expiresAt);
 
         const text = `Your 6-digit password reset code is: ${generatedPin.pin_code}\n\n This Code will expires in 10 minutes.`;
-        await sendMail(userEmail, "Password Reset Code", text);
+        try {
+            await sendMail(userEmail, "Password Reset Code", text);
+            return res.status(200).json({ success: true, message: "reset code pin sent to your email!" });
+        } catch (err) {
+            // Delete pin if email sending failed
+            await deletePinByUserId(user.id);
+            return res.status(500).json({ success: false, message: "Failed to send mail please try again!" })
+        }
 
-        res.status(200).json({ success: true, message: "reset code pin sent to your email!" });
     } catch (err) {
         console.error("forgot password error:", err);
         next(err);
@@ -150,8 +157,8 @@ const resetPassword = async (req, res, next) => {
         const validPin = await getValidPinByCode(verificationCode);
         console.log("line151 validPin:", validPin);
 
-        if(!validPin){
-            return res.status(404).json({success: false, message:"Invalid or expired PIN!"});
+        if (!validPin) {
+            return res.status(404).json({ success: false, message: "Invalid or expired PIN!" });
         }
 
         // 2. Find the user linked with the PIN
@@ -170,10 +177,10 @@ const resetPassword = async (req, res, next) => {
         const usedPin = await markPinUsed(validPin.id);
 
         // 5. Delete If PIN is used
-        if(usedPin){
+        if (usedPin) {
             console.log("deleting:", usedPin);
             console.log("usedPIN.id:", usedPin.id);
-           await deleteExpiredPin(usedPin.id);
+            await deleteExpiredPin(usedPin.id);
         }
         console.log("response:")
         res.status(200).json({ message: "Password updated successful", user: updatedUser })
