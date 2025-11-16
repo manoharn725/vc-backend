@@ -1,8 +1,14 @@
 const sql = require("../db/pg");
 
-// Create a new PIN entry
-const createPin = async (userId, pinCode, expiresAt) => {
-    const result = await sql.query(` INSERT INTO pin_generator(user_id, pin_code, expires_at) VALUES($1, $2, $3) RETURNING *`, [userId, pinCode, expiresAt]);
+// Create a new PIN entry or Update PIN
+const upsertPin = async (userId, pinCode, expiresAt) => {
+    const result = await sql.query(`
+        INSERT INTO pin_generator(user_id, pin_code, expires_at) 
+        VALUES($1, $2, $3)
+        ON CONFLICT(user_id)
+        DO UPDATE SET pin_code = EXCLUDED.pin_code, experis_at = EXCLUDED.experis_at, used = FALSE, created_at = CURRENT_TIMESTAMP 
+        RETURNING *;
+        `, [userId, pinCode, expiresAt]);
     return result.rows[0]
 }
 
@@ -28,4 +34,4 @@ const deleteExpiredPin = async (pinGeneratorId) => {
     return result.rows[0];
 }
 
-module.exports = { createPin, getValidPinByCode, markPinUsed, deleteExpiredPin }
+module.exports = { upsertPin, getValidPinByCode, markPinUsed, deleteExpiredPin }

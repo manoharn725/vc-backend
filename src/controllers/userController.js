@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const generateToken = require("../utils/generateToken");
 const { getAllUsers, createUser, findUserByEmail, findUserById, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus } = require('../models/userModel');
-const { createPin, getValidPinByCode, markPinUsed, deleteExpiredPin } = require("../models/pinGeneratorModel");
+const { upsertPin, getValidPinByCode, markPinUsed, deleteExpiredPin } = require("../models/pinGeneratorModel");
 const sendMail = require("../utils/sendMail");
 
 const fetchUsers = async (req, res, next) => {
@@ -127,7 +127,7 @@ const forgotPassword = async (req, res, next) => {
         console.log("expiresAt:", expiresAt);
         console.log("userDetailes:", user);
 
-        const generatedPin = await createPin(user.id, pinCode, expiresAt);
+        const generatedPin = await upsertPin(user.id, pinCode, expiresAt);
 
         const text = `Your 6-digit password reset code is: ${generatedPin.pin_code}\n\n This Code will expires in 10 minutes.`;
         await sendMail(userEmail, "Password Reset Code", text);
