@@ -28,15 +28,9 @@ const markPinUsed = async (pinId) => {
     return result.rows[0]
 }
 
-// Delete PIN by userId (used when email send fails)
+// Delete PIN by userId (used when email send fails) & after reset password
 const deletePinByUserId = async (userId) => {
     const result = sql.query(`DELETE FROM pin_generator WHERE user_id = $1`, [userId]);
 }
 
-// Delete all the expired pins
-const deleteExpiredPin = async (pinGeneratorId) => {
-    const result = await sql.query(` DELETE FROM pin_generator WHERE id = $1 AND used = TRUE`, [pinGeneratorId]);
-    return result.rows[0];
-}
-
-module.exports = { upsertPin, getValidPinByCode, markPinUsed, deletePinByUserId, deleteExpiredPin }
+module.exports = { upsertPin, getValidPinByCode, markPinUsed, deletePinByUserId }

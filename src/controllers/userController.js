@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const generateToken = require("../utils/generateToken");
 const { getAllUsers, createUser, findUserByEmail, findUserById, updateUserPassword, updateLastLogin, updateLastLogout, updateUserRole, updateUserAccountStatus } = require('../models/userModel');
-const { upsertPin, getValidPinByCode, markPinUsed, deletePinByUserId, deleteExpiredPin } = require("../models/pinGeneratorModel");
+const { upsertPin, getValidPinByCode, markPinUsed, deletePinByUserId } = require("../models/pinGeneratorModel");
 const sendMail = require("../utils/sendMail");
 
 const fetchUsers = async (req, res, next) => {
@@ -180,7 +180,7 @@ const resetPassword = async (req, res, next) => {
         if (usedPin) {
             console.log("deleting:", usedPin);
             console.log("usedPIN.id:", usedPin.id);
-            await deleteExpiredPin(usedPin.id);
+            await deletePinByUserId(usedPin.user_id);
         }
         console.log("response:")
         res.status(200).json({ message: "Password updated successful", user: updatedUser })
