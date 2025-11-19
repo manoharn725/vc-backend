@@ -14,7 +14,7 @@ const getAccountStatuses = async (req, res, next) => {
 // Get account status
 const getAccountStatus = async (req, res, next) => {
     try {
-        const { id } = req.params.id;
+        const { id } = req.params;
         const accountStatus = await getAccountStatusById(id);
         res.status(200).json({ success: true, message: "Get account status", accountStatus: accountStatus });
     } catch (err) {
@@ -38,7 +38,7 @@ const addAccountStatus = async (req, res, next) => {
 // update account status
 const updateAccountStatus = async (req, res, next) => {
     try {
-        const { id } = req.params.id;
+        const { id } = req.params;
         const updateStatus = await updateAccountStatusById(id);
         res.status(200).json({ success: true, message: "Account status updated", accountStatus: updateStatus })
     } catch (err) {
@@ -50,7 +50,7 @@ const updateAccountStatus = async (req, res, next) => {
 // delete account status
 const deleteAccountStatus = async (req, res, next) => {
     try {
-        const { id } = req.params.id;
+        const { id } = req.params;
 
         const deleteStatus = await deleteAccountStatusById(id);
         res.status(200).json({ success: true, message: "Account status delete", accountStatus: deleteStatus })
