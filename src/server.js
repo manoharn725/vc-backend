@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const errHandler = require('./middleware/errorHandler');
+const swaggerUi = require("swagger-ui-express");
 
 dotenv.config();
 const app = express();
@@ -13,12 +14,14 @@ app.use(express.json());
 const userRouter = require('./routes/userRoutes');
 const roleRouter = require('./routes/roleRoutes');
 const accountStatusRouter = require('./routes/accountStatusRoutes');
+const swaggerRouter = require('./swagger');
 
 // Paths
 app.get("/", (req, res) => res.send("Hello from express"));
 app.use('/api/users', userRouter);
 app.use('/api/roles', roleRouter);
 app.use('/api/account-statuses', accountStatusRouter);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerRouter))
 
 // Error Middleware
 app.use(errHandler)

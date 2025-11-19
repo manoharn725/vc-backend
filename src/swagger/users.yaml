@@ -1,0 +1,132 @@
+openapi: 3.0.0
+info:
+  title: User API
+  version: 1.0.0
+  description: User management and authentication API
+
+tags:
+  - name: Users
+    description: User-related operations
+
+paths:
+  /api/users:
+    get:
+      tags:
+        - Roles
+      summary: Get all Roles
+      responses:
+        200:
+          description: Returns list of all users
+
+  /api/users/signup:
+    post:
+      tags:
+        - Roles
+      summary: Register a new Roles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - phoneNumber
+                - userEmail
+                - createPassword
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                phoneNumber:
+                  type: string
+                userEmail:
+                  type: string
+                createPassword:
+                  type: string
+      responses:
+        201:
+          description: User created successfully
+
+  /api/users/signin:
+    post:
+      tags:
+        - Users
+      summary: Login a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userEmail
+                - userPassword
+              properties:
+                userEmail:
+                  type: string
+                userPassword:
+                  type: string
+      responses:
+        200:
+          description: Login successful
+        400:
+          description: Invalid credentials
+
+  /api/users/signout:
+    post:
+      tags:
+        - Users
+      summary: Logout user
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Logout successful
+
+  /api/users/forgot-password:
+    post:
+      tags:
+        - Users
+      summary: Send verification PIN to email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userEmail
+              properties:
+                userEmail:
+                  type: string
+      responses:
+        200:
+          description: PIN sent to user
+
+  /api/users/reset-password:
+    post:
+      tags:
+        - Users
+      summary: Verify PIN & reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - verificationCode
+                - newPassword
+              properties:
+                verificationCode:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        200:
+          description: Password reset successful
+        400:
+          description: Invalid or expired PIN
