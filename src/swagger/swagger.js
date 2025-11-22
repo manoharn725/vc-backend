@@ -5,7 +5,7 @@ const options = {
     definition: {
         openapi: "3.0.0",
         info: {
-            title: "User Management API",
+            title: "Multi Tenant Auth Management API",
             version: "1.0.0",
             description: "API Documentaion for User, Role, Account Status & Auth flows",
         },
@@ -16,9 +16,7 @@ const options = {
             },
         ],
     },
-
-    // This will load ALL yaml files inside src/swagger/*.yaml
-    apis: [path.join(__dirname, "/*.yaml")],
+    apis: [path.join(__dirname, "*.yaml")],// This will load all YAML files
 };
 
 const swaggerSpec = swaggerJSDoc(options);

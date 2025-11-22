@@ -14,7 +14,7 @@ app.use(express.json());
 const userRouter = require('./routes/userRoutes');
 const roleRouter = require('./routes/roleRoutes');
 const accountStatusRouter = require('./routes/accountStatusRoutes');
-const swaggerRouter = require('./swagger');
+const swaggerRouter = require('./swagger/swagger');
 
 // Paths
 app.get("/", (req, res) => res.send("Hello from express"));

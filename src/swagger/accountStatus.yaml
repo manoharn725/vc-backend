@@ -1,0 +1,161 @@
+openapi: 3.0.0
+info:
+  title: Account Status API
+  version: 1.0.0
+  description: Account status management operations
+
+tags:
+  - name: Account Statuses
+    description: Account status-related operations
+
+paths:
+  /api/account-statuses:
+    get:
+      tags:
+        - Account Statuses
+      summary: Get all account statuses
+      responses:
+        200:
+          description: Returns list of all account statuses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  accountStatuses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccountStatus'
+
+    post:
+      tags:
+        - Account Statuses
+      summary: Create a new account status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - statusName
+              properties:
+                statusName:
+                  type: string
+                statusDescription:
+                  type: string
+      responses:
+        201:
+          description: Account status created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  newAccountStatus:
+                    $ref: '#/components/schemas/AccountStatus'
+
+  /api/account-statuses/{id}:
+    get:
+      tags:
+        - Account Statuses
+      summary: Get a specific account status by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Returns account status details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  accountStatus:
+                    $ref: '#/components/schemas/AccountStatus'
+        404:
+          description: Account status not found
+
+    put:
+      tags:
+        - Account Statuses
+      summary: Update an account status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - statusName
+              properties:
+                statusName:
+                  type: string
+                statusDescription:
+                  type: string
+      responses:
+        200:
+          description: Account status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  updatedAccountStatus:
+                    $ref: '#/components/schemas/AccountStatus'
+
+    delete:
+      tags:
+        - Account Statuses
+      summary: Delete an account status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Account status deleted successfully
+        404:
+          description: Account status not found
+
+components:
+  schemas:
+    AccountStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+        status_name:
+          type: string
+        status_description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
